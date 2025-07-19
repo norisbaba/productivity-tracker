@@ -1,0 +1,475 @@
+**Directory Structure (Updated):**
+```
+bmw-parts-theme/
+├── functions.php
+├── style.css
+├── header.php
+├── footer.php
+├── page-notitle.php
+├── page-fullwidth.php
+├── content-aside.php
+├── content-image.php
+├── content-standard.php
+├── sidebar-primary.php
+├── sidebar-secondary.php
+├── single.php
+├── search.php
+├── 404.php
+├── single-bmw_parts.php
+```
+
+**style.css (Updated)**
+```css
+/*
+ Theme Name: BMW Parts Theme
+ Author: Grok
+ Description: A professional WordPress theme for BMW parts with photo integration.
+ Version: 1.1
+ Text Domain: bmw-parts
+*/
+
+body {
+    font-family: 'Roboto', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #333;
+    line-height: 1.6;
+}
+
+.header-menu, .footer-menu {
+    background: #003087; /* BMW Blue */
+    padding: 15px 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.header-menu ul, .footer-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.header-menu ul li, .footer-menu ul li {
+    margin: 0 20px;
+}
+
+.header-menu ul li a, .footer-menu ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.header-menu ul li a:hover, .footer-menu ul li a:hover {
+    color: #66b0ff;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.sidebar {
+    width: 25%;
+    float: right;
+    margin-left: 20px;
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.content-area {
+    width: 70%;
+    float: left;
+}
+
+.fullwidth .content-area {
+    width: 100%;
+}
+
+.post {
+    margin-bottom: 30px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.post img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.post-image img {
+    width: 100%;
+    object-fit: cover;
+    max-height: 400px;
+}
+
+.search-form {
+    margin-bottom: 20px;
+}
+
+.search-form input[type="search"] {
+    width: 70%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px 0 0 5px;
+}
+
+.search-form input[type="submit"] {
+    padding: 10px 20px;
+    background: #003087;
+    color: #fff;
+    border: none;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.search-form input[type="submit"]:hover {
+    background: #0044cc;
+}
+
+h1, h2, h3 {
+    color: #003087;
+    font-weight: 700;
+}
+
+.post-aside, .post-standard, .post-image {
+    transition: transform 0.2s;
+}
+
+.post-aside:hover, .post-standard:hover, .post-image:hover {
+    transform: translateY(-5px);
+}
+
+.bmw-part-details {
+    background: #f1f1f1;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 15px;
+}
+```
+
+**functions.php (Unchanged)**
+```php
+<?php
+// Theme setup
+function bmw_parts_theme_setup() {
+    // Add theme support
+    add_theme_support('title-tag');
+    add_theme_support('post-formats', array('aside', 'image', 'standard'));
+    add_theme_support('post-thumbnails');
+    
+    // Register menus
+    register_nav_menus(array(
+        'header-menu' => __('Header Menu', 'bmw-parts'),
+        'footer-menu' => __('Footer Menu', 'bmw-parts'),
+    ));
+    
+    // Register sidebars
+    register_sidebar(array(
+        'name' => __('Primary Sidebar', 'bmw-parts'),
+        'id' => 'sidebar-primary',
+        'before_widget' => '<div class="widget">',
+        'after_widget' => '</div>',
+        'before_title' => '<h3>',
+        'after_title' => '</h3>',
+    ));
+    
+    register_sidebar(array(
+        'name' => __('Secondary Sidebar', 'bmw-parts'),
+        'id' => 'sidebar-secondary',
+        'before_widget' => '<div class="widget">',
+        'after_widget' => '</div>',
+        'before_title' => '<h3>',
+        'after_title' => '</h3>',
+    ));
+}
+add_action('after_setup_theme', 'bmw_parts_theme_setup');
+
+// Register custom post type for BMW Parts
+function bmw_parts_register_cpt() {
+    $args = array(
+        'public' => true,
+        'label' => __('BMW Parts', 'bmw-parts'),
+        'supports' => array('title', 'editor', 'thumbnail', 'custom-fields'),
+        'has_archive' => true,
+        'rewrite' => array('slug' => 'bmw-parts'),
+        'show_in_rest' => true,
+    );
+    register_post_type('bmw_parts', $args);
+}
+add_action('init', 'bmw_parts_register_cpt');
+
+// ACF Integration
+function bmw_parts_acf_fields() {
+    if (function_exists('acf_add_local_field_group')) {
+        acf_add_local_field_group(array(
+            'key' => 'group_bmw_parts',
+            'title' => 'BMW Parts Details',
+            'fields' => array(
+                array(
+                    'key' => 'field_part_number',
+                    'label' => 'Part Number',
+                    'name' => 'part_number',
+                    'type' => 'text',
+                ),
+                array(
+                    'key' => 'field_part_price',
+                    'label' => 'Price',
+                    'name' => 'part_price',
+                    'type' => 'number',
+                    'prefix' => '$',
+                ),
+            ),
+            'location' => array(
+                array(
+                    array(
+                        'param' => 'post_type',
+                        'operator' => '==',
+                        'value' => 'bmw_parts',
+                    ),
+                ),
+            ),
+        ));
+    }
+}
+add_action('acf/init', 'bmw_parts_acf_fields');
+```
+
+**header.php (Updated)**
+```php
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+    <meta charset="<?php bloginfo('charset'); ?>">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <?php wp_head(); ?>
+</head>
+<body <?php body_class(); ?>>
+    <header class="header-menu">
+        <div class="container">
+            <nav>
+                <?php
+                wp_nav_menu(array(
+                    'theme_location' => 'header-menu',
+                    'container' => false,
+                ));
+                ?>
+            </nav>
+        </div>
+    </header>
+    <div class="container">
+```
+
+**footer.php (Updated)**
+```php
+    </div>
+    <footer class="footer-menu">
+        <div class="container">
+            <nav>
+                <?php
+                wp_nav_menu(array(
+                    'theme_location' => 'footer-menu',
+                    'container' => false,
+                ));
+                ?>
+            </nav>
+            <p style="text-align: center; color: #fff;">&copy; <?php echo date('Y'); ?> BMW Parts. All rights reserved.</p>
+        </div>
+    </footer>
+    <?php wp_footer(); ?>
+</body>
+</html>
+```
+
+**page-notitle.php (Updated)**
+```php
+<?php
+/*
+Template Name: No Title
+*/
+get_header();
+?>
+<div class="content-area">
+    <?php while (have_posts()) : the_post(); ?>
+        <div class="post">
+            <?php if (has_post_thumbnail()) : ?>
+                <?php the_post_thumbnail('large'); ?>
+            <?php else : ?>
+                <img src="https://images.unsplash.com/photo-1622919899999-78a2e5946840?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="BMW Part Placeholder">
+            <?php endif; ?>
+            <?php the_content(); ?>
+        </div>
+    <?php endwhile; ?>
+</div>
+<?php get_sidebar('primary'); ?>
+<?php get_footer(); ?>
+```
+
+**page-fullwidth.php (Updated)**
+```php
+<?php
+/*
+Template Name: Full Width
+*/
+get_header();
+?>
+<div class="content-area fullwidth">
+    <?php while (have_posts()) : the_post(); ?>
+        <div class="post">
+            <h1><?php the_title(); ?></h1>
+            <?php if (has_post_thumbnail()) : ?>
+                <?php the_post_thumbnail('large'); ?>
+            <?php else : ?>
+                <img src="https://images.unsplash.com/photo-1622919899999-78a2e5946840?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="BMW Part Placeholder">
+            <?php endif; ?>
+            <?php the_content(); ?>
+        </div>
+    <?php endwhile; ?>
+</div>
+<?php get_footer(); ?>
+```
+
+**content-aside.php (Updated)**
+```php
+<div class="post post-aside">
+    <h2><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2>
+    <?php if (has_post_thumbnail()) : ?>
+        <?php the_post_thumbnail('medium'); ?>
+    <?php else : ?>
+        <img src="https://images.unsplash.com/photo-1586717799252-3f3b881beb59?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="BMW Part Aside">
+    <?php endif; ?>
+    <?php the_content(); ?>
+</div>
+```
+
+**content-image.php (Updated)**
+```php
+<div class="post post-image">
+    <?php if (has_post_thumbnail()) : ?>
+        <?php the_post_thumbnail('large'); ?>
+    <?php else : ?>
+        <img src="https://images.unsplash.com/photo-1622919899999-78a2e5946840?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="BMW Part Image">
+    <?php endif; ?>
+    <h2><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2>
+    <?php the_excerpt(); ?>
+</div>
+```
+
+**content-standard.php (Updated)**
+```php
+<div class="post post-standard">
+    <h2><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2>
+    <?php if (has_post_thumbnail()) : ?>
+        <?php the_post_thumbnail('medium'); ?>
+    <?php else : ?>
+        <img src="https://images.unsplash.com/photo-1586717799252-3f3b881beb59?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="BMW Part Standard">
+    <?php endif; ?>
+    <?php the_content(); ?>
+</div>
+```
+
+**sidebar-primary.php (Unchanged)**
+```php
+<?php if (is_active_sidebar('sidebar-primary')) : ?>
+    <aside class="sidebar sidebar-primary">
+        <?php dynamic_sidebar('sidebar-primary'); ?>
+    </aside>
+<?php endif; ?>
+```
+
+**sidebar-secondary.php (Unchanged)**
+```php
+<?php if (is_active_sidebar('sidebar-secondary')) : ?>
+    <aside class="sidebar sidebar-secondary">
+        <?php dynamic_sidebar('sidebar-secondary'); ?>
+    </aside>
+<?php endif; ?>
+```
+
+**single.php (Updated)**
+```php
+<?php get_header(); ?>
+<div class="content-area">
+    <?php while (have_posts()) : the_post(); ?>
+        <div class="post">
+            <h1><?php the_title(); ?></h1>
+            <?php if (has_post_thumbnail()) : ?>
+                <?php the_post_thumbnail('large'); ?>
+            <?php else : ?>
+                <img src="https://images.unsplash.com/photo-1622919899999-78a2e5946840?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="BMW Part Single">
+            <?php endif; ?>
+            <?php the_content(); ?>
+        </div>
+    <?php endwhile; ?>
+</div>
+<?php get_sidebar('primary'); ?>
+<?php get_footer(); ?>
+```
+
+**search.php (Updated)**
+```php
+<?php get_header(); ?>
+<div class="content-area">
+    <h1><?php printf(__('Search Results for: %s', 'bmw-parts'), get_search_query()); ?></h1>
+    <?php if (have_posts()) : ?>
+        <?php while (have_posts()) : the_post(); ?>
+            <?php get_template_part('content', get_post_format()); ?>
+        <?php endwhile; ?>
+    <?php else : ?>
+        <p><?php _e('No results found.', 'bmw-parts'); ?></p>
+        <img src="https://images.unsplash.com/photo-1586717799252-3f3b881beb59?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="No Results">
+    <?php endif; ?>
+</div>
+<?php get_sidebar('primary'); ?>
+<?php get_footer(); ?>
+```
+
+**404.php (Updated)**
+```php
+<?php get_header(); ?>
+<div class="content-area">
+    <h1><?php _e('404 - Page Not Found', 'bmw-parts'); ?></h1>
+    <p><?php _e('Sorry, the page you are looking for does not exist.', 'bmw-parts'); ?></p>
+    <img src="https://images.unsplash.com/photo-1586717799252-3f3b881beb59?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="404 Error">
+    <p><a href="<?php echo home_url(); ?>"><?php _e('Return to Home', 'bmw-parts'); ?></a></p>
+</div>
+<?php get_sidebar('primary'); ?>
+<?php get_footer(); ?>
+```
+
+**single-bmw_parts.php (Updated)**
+```php
+<?php get_header(); ?>
+<div class="content-area">
+    <?php while (have_posts()) : the_post(); ?>
+        <div class="post">
+            <h1><?php the_title(); ?></h1>
+            <?php if (has_post_thumbnail()) : ?>
+                <?php the_post_thumbnail('large'); ?>
+            <?php else : ?>
+                <img src="https://images.unsplash.com/photo-1622919899999-78a2e5946840?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="BMW Part">
+            <?php endif; ?>
+            <?php the_content(); ?>
+            <?php if (function_exists('get_field')) : ?>
+                <div class="bmw-part-details">
+                    <p><strong>Part Number:</strong> <?php echo get_field('part_number'); ?></p>
+                    <p><strong>Price:</strong> $<?php echo get_field('part_price'); ?></p>
+                </div>
+            <?php endif; ?>
+        </div>
+    <?php endwhile; ?>
+</div>
+<?php get_sidebar('secondary'); ?>
+<?php get_footer(); ?>
+```
